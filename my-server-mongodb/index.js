@@ -4,13 +4,13 @@ const port = 3002;
 const morgan = require("morgan")
 app.use(morgan("combined"))
 
-const bodyParser=require("body-parser") 
-app.use(bodyParser.json({ limit: '10mb' })); 
+const bodyParser = require("body-parser")
+app.use(bodyParser.json({ limit: '10mb' }));
 app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
 
-app.use(express.json({ limit: '10mb' })); 
-app.use(express.urlencoded({ limit: '10mb' })); 
-app.use(express.json()); 
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb' }));
+app.use(express.json());
 
 const cors = require("cors");
 app.use(cors())
@@ -35,16 +35,69 @@ app.get("/fashion", cors(), async (req, res) => {
 }
 )
 
-app.get("/fashion/:id",cors(),async (req,res)=>{ 
-    var o_id = new ObjectId(req.params["id"]); 
-    const result = await fashionCollection.find({_id:o_id}).toArray();     
-    res.send(result[0]) 
-    } 
-) 
-app.post("/fashion",cors(),async(req,res)=>{    
+app.get("/fashion/:id", cors(), async (req, res) => {
+    var o_id = new ObjectId(req.params["id"]);
+    const result = await fashionCollection.find({ _id: o_id }).toArray();
+    res.send(result[0])
+}
+)
+app.post("/fashion", cors(), async (req, res) => {
     //put json Fashion into database 
-    await fashionCollection.insertOne(req.body) 
+    await fashionCollection.insertOne(req.body)
     //send message to client(send all database to client) 
-    res.send(req.body) 
-}) 
+    res.send(req.body)
+})
+
+var cookieParser = require('cookie-parser');
+app.use(cookieParser());
+
+app.get("/create-cookie",cors(),(req,res)=>{
+    res.cookie("username","tranduythanh")
+    res.cookie("password","123456")
+    account={"username":"tranduythanh",
+    "password":"123456"}
+    res.cookie("account",account)
+    res.send("cookies are created")
+    })
+    
+app.get("/read-cookie",cors(),(req,res)=>{
+//cookie is stored in client, so we use req
+res.send(req.cookies)
+})
+
+app.get("/read-cookie",cors(),(req,res)=>{
+    //cookie is stored in client, so we use req
+    username=req.cookies.username
+    password=req.cookies.password
+    account=req.cookies.account
+    infor="username = "+username+"<br/>"
+    infor+="password = "+password+"<br/>"
+    infor+="account.username = "+account.username+"<br/>"
+    infor+="account.password = "+account.password+"<br/>"
+    res.send(infor)
+    })
+//Expires after 360000 ms from the time it is set.
+res.cookie("infor_limit1", 'I am limited Cookie - way 1', {expire: 360000 +
+    Date.now()});
+    res.cookie("infor_limit2", 'I am limited Cookie - way 2', {maxAge: 360000});
+
+app.get("/clear-cookie",cors(),(req,res)=>{
+    res.clearCookie("account")
+    res.send("[account] Cookie is removed")
+    })
+
+app.get("/read-cookie",cors(),(req,res)=>{
+//cookie is stored in client, so we use req
+username=req.cookies.username
+password=req.cookies.password
+account=req.cookies.account
+infor="username = "+username+"<br/>"
+infor+="password = "+password+"<br/>"
+if(account!=null)
+{
+infor+="account.username = "+account.username+"<br/>"
+infor+="account.password = "+account.password+"<br/>"
+}
+res.send(infor)
+})
 
